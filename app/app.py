@@ -3,7 +3,6 @@ import streamlit as st
 import database as db
 import ai_service as ai
 
-# Configuração da Página
 st.set_page_config(
     page_title="Oracle.ia",
     page_icon="✨",
@@ -11,13 +10,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Inicialização de Serviços
 db.init_db()
 ai_client = ai.AIService()
 
-# =========================
-# ESTILO GEMINI (CSS)
-# =========================
 st.markdown(
     """
     <style>
@@ -50,13 +45,11 @@ st.markdown(
             padding-bottom: 160px;
         }
 
-        /* SIDEBAR ESTILO GOOGLE */
         [data-testid="stSidebar"] {
             background-color: var(--bg-sidebar) !important;
             border: none !important;
         }
 
-        /* Botão Novo Chat */
         [data-testid="stSidebar"] .stButton button {
             border-radius: 50px !important;
             background-color: #1a1c1e !important;
@@ -74,7 +67,6 @@ st.markdown(
             border-color: #8e918f !important;
         }
 
-        /* Lista de Chats (Botões de Histórico) */
         div[data-testid="stVerticalBlock"] > div[style*="flex-direction: column"] > .stButton button {
             background: transparent !important;
             border: none !important;
@@ -87,7 +79,6 @@ st.markdown(
             color: var(--text-secondary) !important;
         }
 
-        /* Cartões de Info Sidebar */
         .sidebar-card {
             background: #282a2c;
             border-radius: 12px;
@@ -98,7 +89,6 @@ st.markdown(
             border: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* HEADER / HERO GRADIENTE */
         .hero-container {
             margin-top: 5vh;
             margin-bottom: 2rem;
@@ -120,7 +110,6 @@ st.markdown(
             100% { background-position: 200%; }
         }
 
-        /* MENSAGENS DO CHAT */
         [data-testid="stChatMessage"] {
             background-color: transparent !important;
             margin-bottom: 1.5rem !important;
@@ -138,7 +127,6 @@ st.markdown(
             background: linear-gradient(45deg, #4285f4, #9b72cb) !important; 
         }
 
-        /* CÓDIGO E PRE */
         code {
             color: #8ab4f8 !important;
             background: #212121 !important;
@@ -154,7 +142,6 @@ st.markdown(
             padding: 1.5rem !important;
         }
 
-        /* INPUT FIXO (BARRA GEMINI) */
         [data-testid="stChatInput"] {
             background-color: var(--bg-main) !important;
         }
@@ -172,17 +159,12 @@ st.markdown(
             font-size: 16px !important;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-thumb { background: #3c4043; border-radius: 10px; }
     </style>
     """,
     unsafe_allow_html=True,
 )
-
-# =========================
-# LÓGICA DE SESSÃO
-# =========================
 
 def create_new_session():
     st.session_state.current_session = str(uuid.uuid4())[:8]
@@ -193,10 +175,6 @@ if "current_session" not in st.session_state:
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
-# =========================
-# SIDEBAR (HISTÓRICO)
-# =========================
 
 with st.sidebar:
     st.markdown('<h2 style="font-family:Google Sans; color:white; font-size:22px; margin-bottom:20px;">Oracle.ia</h2>', unsafe_allow_html=True)
@@ -241,11 +219,6 @@ with st.sidebar:
             st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-# =========================
-# MAIN INTERFACE
-# =========================
-
-# Estado Inicial (Hero Gemini)
 if len(st.session_state.messages) == 0:
     st.markdown(
         """
@@ -262,19 +235,13 @@ if len(st.session_state.messages) == 0:
     with st.chat_message("assistant"):
         st.markdown("Olá! Eu sou o **Oracle.ia**. Estou pronto para processar suas solicitações mantendo o contexto histórico via PostgreSQL.")
 
-# Renderização das Mensagens
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# =========================
-# CHAT INPUT
-# =========================
-
 prompt = st.chat_input("Digite algo aqui...")
 
 if prompt:
-    # Salvar Usuário
     user_message = {"role": "user", "content": prompt}
     st.session_state.messages.append(user_message)
     db.save_message(st.session_state.current_session, "user", prompt)
@@ -282,7 +249,6 @@ if prompt:
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Resposta IA (Streaming)
     with st.chat_message("assistant"):
         placeholder = st.empty()
         full_response = ""
@@ -293,7 +259,6 @@ if prompt:
 
         placeholder.markdown(full_response)
 
-    # Salvar Assistente
     assistant_message = {"role": "assistant", "content": full_response}
     st.session_state.messages.append(assistant_message)
     db.save_message(st.session_state.current_session, "assistant", full_response)
