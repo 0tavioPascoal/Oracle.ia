@@ -1,40 +1,36 @@
-version: '3.8'
-
 services:
-  # Banco de Dados para armazenar os históricos
   db:
     image: postgres:15-alpine
-    container_name: gemini_db
+    container_name: oracle_db
     restart: always
     environment:
       POSTGRES_USER: user_admin
       POSTGRES_PASSWORD: password_123
-      POSTGRES_DB: mini_gemini_db
+      POSTGRES_DB: oracle_ia_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Motor das LLMs
   ollama:
     image: ollama/ollama
-    container_name: gemini_ollama
+    container_name: oracle_ollama
     restart: always
     ports:
       - "11434:11434"
     volumes:
       - ollama_storage:/root/.ollama
 
-  # Seu App (Front + Backend)
   app:
     build: ./app
-    container_name: gemini_app
+    container_name: oracle_app
     restart: always
     ports:
       - "8501:8501"
     environment:
-      - DATABASE_URL=postgresql://user_admin:password_123@db:5432/mini_gemini_db
+      - DATABASE_URL=postgresql://user_admin:password_123@db:5432/oracle_ia_db
       - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=qwen2.5:3b
     depends_on:
       - db
       - ollama
